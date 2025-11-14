@@ -25,10 +25,38 @@ export default function Home() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<string>('');
   const [downloadFormat, setDownloadFormat] = useState<'png' | 'svg'>('png');
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   useEffect(() => {
-    generateQRCode();
+    if (isFormValid()) {
+      generateQRCode();
+    }
   }, [signatureData]);
+
+  const isFormValid = (): boolean => {
+    return !!(
+      signatureData.fullName &&
+      signatureData.jobTitle &&
+      signatureData.company &&
+      signatureData.email
+    );
+  };
+
+  const validateForm = (): boolean => {
+    const errors: string[] = [];
+    
+    if (!signatureData.fullName) errors.push('Full Name is required');
+    if (!signatureData.jobTitle) errors.push('Job Title is required');
+    if (!signatureData.company) errors.push('Company is required');
+    if (!signatureData.email) {
+      errors.push('Email is required');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signatureData.email)) {
+      errors.push('Please enter a valid email address');
+    }
+    
+    setValidationErrors(errors);
+    return errors.length === 0;
+  };
 
   const generateQRCode = async () => {
     try {
@@ -55,6 +83,12 @@ export default function Home() {
   };
 
   const copySignatureToClipboard = async () => {
+    if (!validateForm()) {
+      setCopyStatus('Please fill in all required fields');
+      setTimeout(() => setCopyStatus(''), 3000);
+      return;
+    }
+
     const previewElement = document.getElementById('signature-preview');
     if (!previewElement) return;
 
@@ -78,6 +112,7 @@ export default function Home() {
   };
 
   const downloadQRCode = async () => {
+    if (!validateForm()) return;
     if (!qrCodeUrl) return;
 
     if (downloadFormat === 'svg') {
@@ -116,6 +151,8 @@ export default function Home() {
   };
 
   const downloadSignatureAsImage = async () => {
+    if (!validateForm()) return;
+    
     const previewElement = document.getElementById('signature-preview');
     if (!previewElement) return;
 
@@ -161,23 +198,38 @@ export default function Home() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-bold mb-4 text-gray-800">Actions</h2>
               
+              {validationErrors.length > 0 && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm font-medium text-red-800 mb-1">Please fix the following errors:</p>
+                  <ul className="text-sm text-red-700 list-disc list-inside space-y-1">
+                    {validationErrors.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
               <div className="space-y-4">
                 <button
                   onClick={copySignatureToClipboard}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md"
+                  disabled={!isFormValid()}
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md"
                 >
                   Copy Signature to Clipboard
                 </button>
 
                 {copyStatus && (
-                  <div className="text-center text-sm font-medium text-green-600">
+                  <div className={`text-center text-sm font-medium ${
+                    copyStatus.includes('required') ? 'text-red-600' : 'text-green-600'
+                  }`}>
                     {copyStatus}
                   </div>
                 )}
 
                 <button
                   onClick={downloadSignatureAsImage}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md"
+                  disabled={!isFormValid()}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md"
                 >
                   Download Signature as Image
                 </button>
@@ -210,7 +262,7 @@ export default function Home() {
 
                   <button
                     onClick={downloadQRCode}
-                    disabled={!qrCodeUrl}
+                    disabled={!qrCodeUrl || !isFormValid()}
                     className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md"
                   >
                     Download QR Code ({downloadFormat.toUpperCase()})
