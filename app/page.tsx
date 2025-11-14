@@ -27,19 +27,14 @@ export default function Home() {
   const [downloadFormat, setDownloadFormat] = useState<'png' | 'svg'>('png');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (isFormValid()) {
-      generateQRCode();
-    }
-  }, [signatureData]);
-
   const isFormValid = (): boolean => {
-    return !!(
-      signatureData.fullName &&
-      signatureData.jobTitle &&
-      signatureData.company &&
-      signatureData.email
-    );
+    if (!signatureData.fullName) return false;
+    if (!signatureData.jobTitle) return false;
+    if (!signatureData.company) return false;
+    if (!signatureData.email) return false;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signatureData.email)) return false;
+    
+    return true;
   };
 
   const validateForm = (): boolean => {
@@ -57,6 +52,15 @@ export default function Home() {
     setValidationErrors(errors);
     return errors.length === 0;
   };
+
+  useEffect(() => {
+    if (isFormValid()) {
+      generateQRCode();
+      if (validationErrors.length > 0) {
+        setValidationErrors([]);
+      }
+    }
+  }, [signatureData]);
 
   const generateQRCode = async () => {
     try {
