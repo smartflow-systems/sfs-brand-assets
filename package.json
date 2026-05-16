@@ -11,7 +11,7 @@
     "agent": "node scripts/sfs-agent-cli.js",
     "sync": "bash scripts/auto-sync.sh",
     "sync:watch": "node scripts/sync-chatgpt-claude.js watch",
-    "build": "echo 'build complete' && exit 0",
+    "build": "next build",
     "test": "echo 'no tests configured' && exit 0",
     "migrate": "prisma migrate dev --name init",
     "studio": "prisma studio",
@@ -23,9 +23,12 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@tailwindcss/postcss": "^4.3.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/qrcode": "^1.5.6",
+    "autoprefixer": "^10.5.0",
     "axios": "^1.13.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -33,12 +36,21 @@
     "express": "^4.21.2",
     "express-rate-limit": "^8.2.1",
     "helmet": "^8.1.0",
+    "html2canvas": "^1.4.1",
     "http-proxy-middleware": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
-    "stripe": "^16.12.0"
+    "next": "^16.2.6",
+    "postcss": "^8.5.14",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "stripe": "^16.12.0",
+    "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
-    "prisma": "^5.22.0"
+    "@types/react": "19.2.14",
+    "prisma": "^5.22.0",
+    "typescript": "6.0.3"
   },
   "engines": {
     "node": ">=18"
